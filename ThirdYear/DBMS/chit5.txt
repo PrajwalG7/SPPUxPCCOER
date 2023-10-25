@@ -1,0 +1,45 @@
+Cursors: (Implicit and Explicit Cursor). Write a PL/SQL block of code using parameterized Cursor, that will merge
+the data available in the newly created table N_RollCall with the data available in the table O_RollCall. If the data
+in the first table already exist in the second table then that data should be skipped.
+
+-- Create the N_RollCall and O_RollCall tables (if they don't exist)
+CREATE TABLE N_RollCall (
+    ID INT PRIMARY KEY,
+    Data VARCHAR(255)
+);
+
+CREATE TABLE O_RollCall (
+    ID INT PRIMARY KEY,
+    Data VARCHAR(255)
+);
+
+-- Insert some sample data into the N_RollCall table
+INSERT INTO N_RollCall (ID, Data) VALUES (1, 'Data1');
+INSERT INTO N_RollCall (ID, Data) VALUES (2, 'Data2');
+INSERT INTO N_RollCall (ID, Data) VALUES (3, 'Data3');
+
+
+-- Assuming N_RollCall and O_RollCall tables exist
+
+-- Declare variables
+DECLARE
+   v_N_RollCall_ID N_RollCall.ID%TYPE;
+   v_N_RollCall_Data N_RollCall.Data%TYPE;
+BEGIN
+   -- Open a cursor for the N_RollCall table
+   FOR N_RollCall_Cursor IN (SELECT ID, Data FROM N_RollCall) DO
+      -- Check if the data in N_RollCall exists in O_RollCall
+      SELECT ID INTO v_N_RollCall_ID
+      FROM O_RollCall
+      WHERE Data = N_RollCall_Cursor.Data;
+
+      -- If the data doesn't exist in O_RollCall, insert it
+      IF v_N_RollCall_ID IS NULL THEN
+         INSERT INTO O_RollCall (Data)
+         VALUES (N_RollCall_Cursor.Data);
+      END IF;
+   END FOR;
+
+   COMMIT;
+END;
+/

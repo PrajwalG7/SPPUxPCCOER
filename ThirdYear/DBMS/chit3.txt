@@ -1,0 +1,60 @@
+Unnamed PL/SQL code block: Use of Control structure and Exception handling is mandatory. Write a PL/SQL
+block of code for the following requirements:-Consider table Stud(Roll, Att,Status) Write a PL/SQL block for
+following requirement and handle the exceptions. Roll no. of student will be entered by user. Attendance of roll no.
+entered by user will be checked in Stud table. If attendance is less than 75% then display the message “Term not
+granted” and set the status in stud table as “D”. Otherwise display message “Term granted” and set the status in stud
+table as “ND” .
+
+-- Create the Stud table
+CREATE TABLE Stud (
+    Roll INT PRIMARY KEY,
+    Att NUMBER(5, 2),
+    Status VARCHAR2(2)
+);
+
+-- Insert sample data into the Stud table
+INSERT INTO Stud (Roll, Att, Status)
+VALUES (1, 80.0, 'ND');
+
+INSERT INTO Stud (Roll, Att, Status)
+VALUES (2, 60.0, 'ND');
+
+-- Add more sample data as needed
+
+
+DECLARE
+   v_roll_no Stud.Roll%TYPE;
+   v_attendance Stud.Att%TYPE;
+   v_status Stud.Status%TYPE;
+BEGIN
+   -- Accept user input
+   v_roll_no := &roll_no;
+   
+   -- Fetch attendance and status
+   SELECT Att, Status INTO v_attendance, v_status
+   FROM Stud
+   WHERE Roll = v_roll_no;
+
+   -- Check attendance and update status
+   IF v_attendance < 75 THEN
+      v_status := 'D';
+      DBMS_OUTPUT.PUT_LINE('Term not granted');
+   ELSE
+      v_status := 'ND';
+      DBMS_OUTPUT.PUT_LINE('Term granted');
+   END IF;
+
+   -- Update the status in the Stud table
+   UPDATE Stud
+   SET Status = v_status
+   WHERE Roll = v_roll_no;
+   
+   COMMIT;
+
+EXCEPTION
+   WHEN NO_DATA_FOUND THEN
+      DBMS_OUTPUT.PUT_LINE('Student not found for the given Roll number.');
+   WHEN OTHERS THEN
+      DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/

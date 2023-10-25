@@ -1,0 +1,90 @@
+Use MySQL –( Joins and Subqueries)
+Create Customer and Account table and add rows shown below
+
+1. Show the cname, Acc_Type, amount information of customer who is having an saving account.
+2. Display the data using Natural, left and right join.
+3. Display the information of customers living in the same city as of ‘pooja’.
+4. Display the information of account, having less amount than average amount throughout the bank.
+5. Display the C_id having maximum amount in account.
+6. Display the amount and acc_type of those customers whose amount is the minimum amount of that Acc_type.
+7. Display the amount of those accounts whose amount is higher than amount of any saving account amount.
+
+#To perform these tasks in MySQL using joins and subqueries, you can follow the steps below. First, let's create the Customer and Account tables and add the rows as you mentioned:
+
+CREATE TABLE Customer (
+    C_id INT PRIMARY KEY,
+    Cname VARCHAR(255),
+    City VARCHAR(255)
+);
+
+CREATE TABLE Account (
+    Acc_id INT PRIMARY KEY,
+    C_id INT,
+    Acc_Type VARCHAR(255),
+    Amount DECIMAL(10, 2),
+    FOREIGN KEY (C_id) REFERENCES Customer(C_id)
+);
+
+INSERT INTO Customer (C_id, Cname, City) VALUES
+    (1, 'John', 'New York'),
+    (2, 'Pooja', 'New York'),
+    (3, 'Alice', 'Los Angeles'),
+    (4, 'Bob', 'New York');
+
+INSERT INTO Account (Acc_id, C_id, Acc_Type, Amount) VALUES
+    (101, 1, 'Savings', 5000.00),
+    (102, 2, 'Savings', 6000.00),
+    (103, 3, 'Checking', 3000.00),
+    (104, 4, 'Savings', 7500.00);
+
+#1 Show the cname, Acc_Type, amount information of customers who have a savings account
+SELECT C.Cname, A.Acc_Type, A.Amount
+FROM Customer C
+INNER JOIN Account A ON C.C_id = A.C_id
+WHERE A.Acc_Type = 'Savings';
+
+#2 Display the data using Natural, left, and right join.
+-- Natural Join
+SELECT C.Cname, A.Acc_Type, A.Amount
+FROM Customer C
+NATURAL JOIN Account A;
+
+-- Left Join
+SELECT C.Cname, A.Acc_Type, A.Amount
+FROM Customer C
+LEFT JOIN Account A ON C.C_id = A.C_id;
+
+-- Right Join
+SELECT C.Cname, A.Acc_Type, A.Amount
+FROM Customer C
+RIGHT JOIN Account A ON C.C_id = A.C_id;
+
+#3 Display the information of customers living in the same city as 'Pooja'.
+SELECT C.Cname, C.City
+FROM Customer C
+WHERE C.City = (SELECT City FROM Customer WHERE Cname = 'Pooja');
+
+#4 Display the information of accounts with an amount less than the average amount throughout the bank.
+SELECT A.Acc_id, A.Acc_Type, A.Amount
+FROM Account A
+WHERE A.Amount < (SELECT AVG(Amount) FROM Account);
+
+#5 Display the C_id having the maximum amount in the account.
+SELECT C_id
+FROM Account
+WHERE Amount = (SELECT MAX(Amount) FROM Account);
+
+#6 Display the amount and Acc_Type of those customers whose amount is the minimum amount of that Acc_Type.
+SELECT C.Cname, A.Amount, A.Acc_Type
+FROM Customer C
+INNER JOIN Account A ON C.C_id = A.C_id
+WHERE (A.Amount, A.Acc_Type) IN (
+    SELECT MIN(Amount), Acc_Type
+    FROM Account
+    GROUP BY Acc_Type
+);
+
+#7 Display the amount of those accounts whose amount is higher than the amount of any savings account.
+SELECT Acc_id, Acc_Type, Amount
+FROM Account
+WHERE Amount > (SELECT MAX(Amount) FROM Account WHERE Acc_Type = 'Savings');
